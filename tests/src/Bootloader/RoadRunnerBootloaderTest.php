@@ -81,7 +81,7 @@ final class RoadRunnerBootloaderTest extends TestCase
     {
         $kernel = $this->getContainer()->get(KernelInterface::class);
         $dispatchers = (new \ReflectionProperty($kernel, 'dispatchers'))->getValue($kernel);
-        $dispatchers = \array_filter($dispatchers, static fn (mixed $disp): bool => $disp !== ConsoleDispatcher::class);
+        $dispatchers = \array_filter($dispatchers, static fn (string $disp): bool => $disp !== ConsoleDispatcher::class);
 
         $this->assertSame(FallbackDispatcher::class, $dispatchers[\array_key_last($dispatchers)]);
     }
