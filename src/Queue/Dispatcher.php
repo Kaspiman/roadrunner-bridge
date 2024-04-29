@@ -16,6 +16,8 @@ use Spiral\Queue\Exception\RetryException;
 use Spiral\Queue\ExtendedOptionsInterface;
 use Spiral\Queue\Interceptor\Consume\Handler;
 use Spiral\Queue\OptionsInterface;
+use Spiral\Queue\Task;
+use Spiral\Queue\TaskInterface;
 use Spiral\RoadRunner\Jobs\ConsumerInterface;
 use Spiral\RoadRunner\Jobs\Exception\JobsException;
 use Spiral\RoadRunner\Jobs\OptionsInterface as JobsOptionsInterface;

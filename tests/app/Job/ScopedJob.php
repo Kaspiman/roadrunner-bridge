@@ -7,7 +7,7 @@ namespace Spiral\App\Job;
 use Psr\Container\ContainerInterface;
 use Spiral\Core\Internal\Introspector;
 use Spiral\Queue\JobHandler;
-use Spiral\RoadRunnerBridge\Queue\TaskInterface;
+use Spiral\Queue\TaskInterface;
 
 final class ScopedJob extends JobHandler
 {
