@@ -129,16 +129,19 @@ EOL,
                 <<<'EOL'
 $container->bindSingleton(
     %s::class,
-    static function(GRPCServicesConfig $config): %s
+    static function(GRPCServicesConfig $config) use($container): %s
     {
         $service = $config->getService(%s::class);
+        $core = new InterceptableCore(new ServiceClientCore(
+            $service['host'],
+            ['credentials' => $service['credentials'] ?? $config->getDefaultCredentials()]
+        ));
 
-        return new %s(
-            new InterceptableCore(new ServiceClientCore(
-                $service['host'],
-                ['credentials' => $service['credentials'] ?? $config->getDefaultCredentials()]
-            ))
-        );
+        foreach ($config->getInterceptors() as $interceptor) {
+            $core->addInterceptor($container->get($interceptor));
+        }
+
+        return $container->make(%s::class, ['core' => $core]);
     }
 );
 EOL,
