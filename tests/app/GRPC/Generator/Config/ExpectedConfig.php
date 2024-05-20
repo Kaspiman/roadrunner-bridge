@@ -12,11 +12,16 @@ class GRPCServicesConfig extends InjectableConfig
     public const CONFIG = 'grpcServices';
 
     /** @var array<class-string, array{host: string, credentials?: mixed}> */
-    protected array $config = ['services' => []];
+    protected array $config = ['services' => [], 'interceptors' => []];
 
     public function getDefaultCredentials(): mixed
     {
         return ChannelCredentials::createInsecure();
+    }
+
+    public function getInterceptors(): array
+    {
+        return $this->config['interceptors'];
     }
 
     /**

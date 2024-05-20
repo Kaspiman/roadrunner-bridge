@@ -53,16 +53,19 @@ class ServiceBootloader extends Bootloader
     {
         $container->bindSingleton(
             UsersServiceInterface::class,
-            static function(GRPCServicesConfig $config): UsersServiceInterface
+            static function(GRPCServicesConfig $config) use($container): UsersServiceInterface
             {
                 $service = $config->getService(UsersServiceClient::class);
+                $core = new InterceptableCore(new ServiceClientCore(
+                    $service['host'],
+                    ['credentials' => $service['credentials'] ?? $config->getDefaultCredentials()]
+                ));
 
-                return new UsersServiceClient(
-                    new InterceptableCore(new ServiceClientCore(
-                        $service['host'],
-                        ['credentials' => $service['credentials'] ?? $config->getDefaultCredentials()]
-                    ))
-                );
+                foreach ($config->getInterceptors() as $interceptor) {
+                    $core->addInterceptor($container->get($interceptor));
+                }
+
+                return $container->make(UsersServiceClient::class, ['core' => $core]);
             }
         );
     }

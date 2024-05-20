@@ -38,7 +38,7 @@ final class ConfigGenerator implements GeneratorInterface
 
         $config->addConstant('CONFIG', 'grpcServices')->setPublic();
         $config
-            ->addProperty('config', ['services' => []])
+            ->addProperty('config', ['services' => [], 'interceptors' => []])
             ->setProtected()
             ->setType('array')
             ->setComment('@var array<class-string, array{host: string, credentials?: mixed}>');
@@ -47,6 +47,11 @@ final class ConfigGenerator implements GeneratorInterface
             ->setPublic()
             ->addBody('return ChannelCredentials::createInsecure();')
             ->setReturnType('mixed');
+        $config
+            ->addMethod('getInterceptors')
+            ->setPublic()
+            ->setBody('return $this->config[\'interceptors\'];')
+            ->setReturnType('array');
         $config
             ->addMethod('getService')
             ->addComment('Get service definition.')
