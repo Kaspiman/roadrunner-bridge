@@ -47,10 +47,10 @@
         "spiral/scaffolder": "^3.13"
     },
     "require-dev": {
-        "spiral/framework": "dev-feature/scopes as 3.13.0",
-        "spiral/testing": "^2.7",
+        "spiral/framework": "^3.14",
+        "spiral/testing": "^2.8",
         "phpunit/phpunit": "^10.1",
-        "vimeo/psalm": "^5.0",
+        "vimeo/psalm": "^5.24",
         "spiral/nyholm-bridge": "^1.2"
     },
     "suggest": {
