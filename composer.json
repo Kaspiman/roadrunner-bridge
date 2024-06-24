@@ -47,7 +47,7 @@
         "spiral/scaffolder": "^3.13"
     },
     "require-dev": {
-        "spiral/framework": "^3.14",
+        "spiral/framework": "dev-interceptor/add-pipeline-builder as 3.14",
         "spiral/testing": "^2.8",
         "phpunit/phpunit": "^10.1",
         "vimeo/psalm": "^5.24",

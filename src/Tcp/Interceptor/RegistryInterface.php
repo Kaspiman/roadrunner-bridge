@@ -6,22 +6,27 @@ namespace Spiral\RoadRunnerBridge\Tcp\Interceptor;
 
 use Spiral\Core\Container\Autowire;
 use Spiral\Core\CoreInterceptorInterface;
+use Spiral\Interceptors\InterceptorInterface;
 
 /**
- * @psalm-type TInterceptor = Autowire|CoreInterceptorInterface|class-string<CoreInterceptorInterface>
+ * @psalm-type TLegacyInterceptor = Autowire|CoreInterceptorInterface|class-string<CoreInterceptorInterface>
+ * @psalm-type TInterceptor = Autowire|InterceptorInterface|class-string<InterceptorInterface>
  */
 interface RegistryInterface
 {
     /**
      * @param non-empty-string $server
      *
-     * @return CoreInterceptorInterface[]
+     * @return array<CoreInterceptorInterface|InterceptorInterface>
      */
     public function getInterceptors(string $server): array;
 
     /**
      * @param non-empty-string $server
-     * @param TInterceptor $interceptor
+     * @param TInterceptor|TLegacyInterceptor $interceptor
      */
-    public function register(string $server, Autowire|CoreInterceptorInterface|string $interceptor): void;
+    public function register(
+        string $server,
+        Autowire|CoreInterceptorInterface|InterceptorInterface|string $interceptor,
+    ): void;
 }

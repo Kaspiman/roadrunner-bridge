@@ -23,10 +23,7 @@ final class InvokerCore implements CoreInterface
         \assert($parameters['service'] instanceof ServiceInterface);
         \assert($parameters['method'] instanceof Method);
         \assert($parameters['ctx'] instanceof ContextInterface);
-        \assert(
-            \is_string($parameters['input'])
-            || null === $parameters['input'],
-        );
+        \assert(\is_string($parameters['input']) || null === $parameters['input']);
 
         $input = (isset($parameters['message']) && $parameters['message'] instanceof Message)
             ? $parameters['message']

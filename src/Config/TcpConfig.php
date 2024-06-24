@@ -5,10 +5,14 @@ declare(strict_types=1);
 namespace Spiral\RoadRunnerBridge\Config;
 
 use Spiral\Core\Container\Autowire;
-use Spiral\Core\CoreInterceptorInterface;
 use Spiral\Core\InjectableConfig;
 use Spiral\RoadRunnerBridge\Tcp\Service\ServiceInterface;
+use Spiral\RoadRunnerBridge\Tcp\Interceptor;
 
+/**
+ * @psalm-import-type TInterceptor from Interceptor\RegistryInterface
+ * @psalm-import-type TLegacyInterceptor from Interceptor\RegistryInterface
+ */
 final class TcpConfig extends InjectableConfig
 {
     public const CONFIG = 'tcp';
@@ -27,7 +31,7 @@ final class TcpConfig extends InjectableConfig
     }
 
     /**
-     * @return array<non-empty-string, list<Autowire|class-string<CoreInterceptorInterface>|CoreInterceptorInterface>>
+     * @return array<non-empty-string, list<TInterceptor|TLegacyInterceptor>>
      */
     public function getInterceptors(): array
     {

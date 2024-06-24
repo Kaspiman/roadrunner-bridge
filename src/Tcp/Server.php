@@ -5,53 +5,77 @@ declare(strict_types=1);
 namespace Spiral\RoadRunnerBridge\Tcp;
 
 use Psr\Container\ContainerInterface;
+use Spiral\Boot\FinalizerInterface;
 use Spiral\Core\Attribute\Proxy;
-use Spiral\Core\InterceptableCore;
+use Spiral\Core\CompatiblePipelineBuilder;
 use Spiral\Core\Scope;
 use Spiral\Core\ScopeInterface;
+use Spiral\Exceptions\ExceptionReporterInterface;
+use Spiral\Interceptors\Context\CallContext;
+use Spiral\Interceptors\Context\Target;
+use Spiral\Interceptors\Handler\ReflectionHandler;
+use Spiral\Interceptors\HandlerInterface;
+use Spiral\Interceptors\PipelineBuilderInterface;
 use Spiral\RoadRunner\Payload;
 use Spiral\RoadRunner\Tcp\RequestInterface;
 use Spiral\RoadRunner\Tcp\TcpWorker;
 use Spiral\RoadRunner\Worker;
 use Spiral\RoadRunner\WorkerInterface;
 use Spiral\RoadRunnerBridge\Config\TcpConfig;
-use Spiral\RoadRunnerBridge\Tcp\Interceptor\RegistryInterface;
+use Spiral\RoadRunnerBridge\Tcp\Interceptor\RegistryInterface as InterceptorRegistry;
 use Spiral\RoadRunnerBridge\Tcp\Response\CloseConnection;
 use Spiral\RoadRunnerBridge\Tcp\Response\ResponseInterface;
+use Spiral\RoadRunnerBridge\Tcp\Service\RegistryInterface as ServiceRegistry;
 
 final class Server
 {
+    private readonly PipelineBuilderInterface $pipelineBuilder;
+    private readonly HandlerInterface $handler;
+    /** @var array<non-empty-string, HandlerInterface> */
+    private array $pipelines = [];
+
     public function __construct(
         private readonly TcpConfig $config,
-        private readonly RegistryInterface $registry,
-        private readonly TcpServerHandler $handler,
+        private readonly InterceptorRegistry $interceptors,
+        private readonly ServiceRegistry $services,
         #[Proxy] private readonly ContainerInterface $container,
+        private readonly FinalizerInterface $finalizer,
+        private readonly ExceptionReporterInterface $reporter,
+        ?PipelineBuilderInterface $pipelineBuilder = null,
     ) {
+        $this->pipelineBuilder = $pipelineBuilder ?? $container->get(CompatiblePipelineBuilder::class);
+        $this->handler = new ReflectionHandler($container);
     }
 
     /**
      * @throws \JsonException
      */
-    public function serve(WorkerInterface $worker = null, callable $finalize = null): void
+    public function serve(WorkerInterface $worker = null): void
     {
         $worker ??= Worker::create();
         $tcpWorker = new TcpWorker($worker);
         $scope = $this->container->get(ScopeInterface::class);
 
         while ($request = $tcpWorker->waitRequest()) {
+            $e = null;
             try {
-                $core = $this->createHandler($request->getServer());
+                $server = $request->getServer();
+                $pipeline = $this->getPipeline($server);
+                $service = $this->services->getService($server);
+
                 /**
                  * @var ResponseInterface $response
-                 *
-                 * @psalm-suppress InvalidArgument
                  */
                 $response = $scope->runScope(
-                    new Scope('tcp.packet', [RequestInterface::class => $request]),
-                    static fn (): mixed => $core->callAction($request->getServer(), 'handle', ['request' => $request])
+                    new Scope('tcp.request', [RequestInterface::class => $request]),
+                    static fn (): mixed => $pipeline->handle(new CallContext(
+                        /** @see \Spiral\RoadRunnerBridge\Tcp\Service\ServiceInterface::handle() */
+                        Target::fromPair($service, 'handle'),
+                        [$request],
+                    ))
                 );
             } catch (\Throwable $e) {
-                $worker->error($this->config->isDebugMode() ? (string)$e : $e->getMessage());
+                $worker->error($this->config->isDebugMode() ? (string) $e : $e->getMessage());
                 $response = new CloseConnection();
             } finally {
                 if (isset($response) && $response instanceof ResponseInterface) {
@@ -60,9 +84,7 @@ final class Server
                     );
                 }
 
-                if ($finalize !== null) {
-                    isset($e) ? $finalize($e) : $finalize();
-                }
+                $this->finalize($e);
             }
         }
     }
@@ -70,14 +92,23 @@ final class Server
     /**
      * @param non-empty-string $server
      */
-    private function createHandler(string $server): InterceptableCore
+    private function getPipeline(string $server): HandlerInterface
     {
-        $core = new InterceptableCore($this->handler);
+        return $this->pipelines[$server] ??= $this->pipelineBuilder
+            ->withInterceptors(...$this->interceptors->getInterceptors($server))
+            ->build($this->handler);
+    }
 
-        foreach ($this->registry->getInterceptors($server) as $interceptor) {
-            $core->addInterceptor($interceptor);
+    private function finalize(?\Throwable $e): void
+    {
+        if ($e !== null) {
+            try {
+                $this->reporter->report($e);
+            } catch (\Throwable) {
+                // no need to notify when unable to register an exception
+            }
         }
 
-        return $core;
+        $this->finalizer->finalize(terminate: false);
     }
 }
