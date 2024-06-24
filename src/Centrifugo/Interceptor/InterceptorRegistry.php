@@ -9,20 +9,22 @@ use RoadRunner\Centrifugo\Request\RequestType;
 use Spiral\Core\Container\Autowire;
 use Spiral\Core\CoreInterceptorInterface;
 use Spiral\Core\FactoryInterface;
+use Spiral\Interceptors\InterceptorInterface;
 use Spiral\RoadRunnerBridge\Centrifugo\Exception\ConfigurationException;
 
 /**
  * @psalm-import-type TInterceptor from RegistryInterface
+ * @psalm-import-type TLegacyInterceptor from RegistryInterface
  */
 final class InterceptorRegistry implements RegistryInterface
 {
     private const INTERCEPTORS_FOR_ALL_SERVICES = '*';
 
-    /** @var array<string, CoreInterceptorInterface[]> */
+    /** @var array<non-empty-string, array<TInterceptor|TLegacyInterceptor>> */
     private array $interceptors = [];
 
     /**
-     * @param array<non-empty-string, TInterceptor|TInterceptor[]> $interceptors
+     * @param array<non-empty-string, TInterceptor|TInterceptor[]|TLegacyInterceptor|TLegacyInterceptor[]> $interceptors
      */
     public function __construct(
         array $interceptors,
@@ -40,11 +42,10 @@ final class InterceptorRegistry implements RegistryInterface
         }
     }
 
-    /**
-     * @param non-empty-string $type
-     */
-    public function register(string $type, Autowire|CoreInterceptorInterface|string $interceptor): void
-    {
+    public function register(
+        string $type,
+        Autowire|CoreInterceptorInterface|InterceptorInterface|string $interceptor,
+    ): void {
         if ($type !== '*' && RequestType::tryFrom($type) === null) {
             throw new ConfigurationException(\sprintf(
                 'The $type value must be one of the `%s`, `%s` values.',
@@ -55,7 +56,8 @@ final class InterceptorRegistry implements RegistryInterface
 
         /** @var CoreInterceptorInterface $object */
         $object = match (true) {
-            $interceptor instanceof CoreInterceptorInterface => $interceptor,
+            $interceptor instanceof CoreInterceptorInterface,
+                $interceptor instanceof InterceptorInterface => $interceptor,
             $interceptor instanceof Autowire => $interceptor->resolve($this->factory),
             default => $this->container->get($interceptor)
         };
@@ -63,11 +65,6 @@ final class InterceptorRegistry implements RegistryInterface
         $this->interceptors[$type][] = $object;
     }
 
-    /**
-     * @param non-empty-string $type
-     *
-     * @return CoreInterceptorInterface[]
-     */
     public function getInterceptors(string $type): array
     {
         return \array_merge(
