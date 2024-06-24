@@ -71,7 +71,8 @@ final class Server
                     static fn (): mixed => $pipeline->handle(new CallContext(
                         /** @see \Spiral\RoadRunnerBridge\Tcp\Service\ServiceInterface::handle() */
                         Target::fromPair($services->getService($server), 'handle'),
-                        [$request],
+                        ['request' => $request],
+                        ['server' => $server],
                     ))
                 );
             } catch (\Throwable $e) {
