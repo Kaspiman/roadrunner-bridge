@@ -45,6 +45,7 @@ final class Dispatcher implements DispatcherInterface
                 $worker->respond($response);
             } catch (\Throwable $e) {
                 $worker->respond($this->errorToResponse($e));
+                unset($e);
             } finally {
                 $this->finalizer->finalize(false);
             }

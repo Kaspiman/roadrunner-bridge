@@ -82,8 +82,10 @@ final class Dispatcher implements DispatcherInterface
                 );
             } catch (RetryException $e) {
                 $this->retry($e, $task);
+                unset($e);
             } catch (\Throwable $e) {
                 $task->fail($e);
+                unset($e);
             }
 
             $this->finalizer->finalize(terminate: false);

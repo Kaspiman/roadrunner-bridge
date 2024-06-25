@@ -65,6 +65,7 @@ final class Server
                 );
             } catch (\Throwable $e) {
                 $this->errorHandler->handle($request, $e);
+                unset($e);
             }
 
             $this->finalizer->finalize();
