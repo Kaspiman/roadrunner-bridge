@@ -4,41 +4,69 @@ declare(strict_types=1);
 
 namespace Spiral\RoadRunnerBridge\GRPC;
 
-use Psr\Container\ContainerInterface;
-use Spiral\Core\Exception\Container\ContainerException;
 use Spiral\RoadRunner\GRPC\ServiceInterface;
-use Spiral\Tokenizer\ClassesInterface;
+use Spiral\Tokenizer\Attribute\TargetClass;
+use Spiral\Tokenizer\TokenizationListenerInterface;
 
-final class ServiceLocator implements LocatorInterface
+#[TargetClass(ServiceInterface::class)]
+final class ServiceLocator implements LocatorInterface, TokenizationListenerInterface
 {
-    public function __construct(
-        private readonly ClassesInterface $classes,
-        private readonly ContainerInterface $container
-    ) {
-    }
+    /**
+     * @var array<class-string<ServiceInterface>, \ReflectionClass<ServiceInterface>> Interface => Implementation
+     */
+    private array $registry = [];
 
     public function getServices(): array
     {
-        $result = [];
+        return $this->registry;
+    }
 
-        foreach ($this->classes->getClasses(ServiceInterface::class) as $service) {
-            if (!$service->isInstantiable()) {
-                continue;
-            }
-
-            try {
-                $instance = $this->container->get($service->getName());
-            } catch (ContainerException) {
-                continue;
-            }
-
-            foreach ($service->getInterfaces() as $interface) {
-                if ($interface->isSubclassOf(ServiceInterface::class)) {
-                    $result[$interface->getName()] = $instance;
-                }
-            }
+    /**
+     * @param \ReflectionClass<ServiceInterface> $class
+     * @return void
+     */
+    public function listen(\ReflectionClass $class): void
+    {
+        if (!$class->isInstantiable()) {
+            return;
         }
 
-        return $result;
+        // Find ServiceInterface interfaces
+        /** @var array<class-string<ServiceInterface>, \ReflectionClass<ServiceInterface>> $interfaces */
+        $interfaces = [];
+        foreach ($class->getInterfaces() as $interface) {
+            if (!$interface->isSubclassOf(ServiceInterface::class)) {
+                continue;
+            }
+
+            // Deduplicate parents
+            foreach ($interfaces as $className => $reflection) {
+                if ($interface->isSubclassOf($className)) {
+                    continue 2;
+                }
+
+                if ($reflection->isSubclassOf($interface->getName())) {
+                    unset($interfaces[$className]);
+                }
+            }
+
+            $interfaces[$interface->getName()] = $interface;
+        }
+
+        foreach ($interfaces as $className => $reflection) {
+            \array_key_exists($className, $this->registry) and throw new \LogicException(
+                \sprintf(
+                    'Service %s already registered for interface %s.',
+                    $this->registry[$className],
+                    $className,
+                )
+            );
+
+            $this->registry[$className] = $class;
+        }
+    }
+
+    public function finalize(): void
+    {
     }
 }

@@ -8,6 +8,7 @@ use Psr\Container\ContainerInterface;
 use Spiral\Attribute\DispatcherScope;
 use Spiral\Boot\DispatcherInterface;
 use Spiral\Boot\FinalizerInterface;
+use Spiral\Core\Attribute\Proxy;
 use Spiral\RoadRunner\GRPC\Server;
 use Spiral\RoadRunner\WorkerInterface;
 use Spiral\Exceptions\ExceptionReporterInterface;
@@ -17,7 +18,7 @@ use Spiral\RoadRunnerBridge\RoadRunnerMode;
 final class Dispatcher implements DispatcherInterface
 {
     public function __construct(
-        private readonly ContainerInterface $container,
+        #[Proxy] private readonly ContainerInterface $container,
         private readonly FinalizerInterface $finalizer,
     ) {
     }
@@ -29,15 +30,21 @@ final class Dispatcher implements DispatcherInterface
 
     public function serve(): void
     {
+        $container = $this->container->get(ContainerInterface::class);
+
         /** @var Server $server */
-        $server = $this->container->get(Server::class);
+        $server = $container->get(Server::class);
         /** @var WorkerInterface $worker */
-        $worker = $this->container->get(WorkerInterface::class);
+        $worker = $container->get(WorkerInterface::class);
         /** @var LocatorInterface $locator */
-        $locator = $this->container->get(LocatorInterface::class);
+        $locator = $container->get(LocatorInterface::class);
 
         foreach ($locator->getServices() as $interface => $service) {
-            $server->registerService($interface, $service);
+            try {
+                $server->registerService($interface, $container->get($service->getName()));
+            } catch (\Throwable $e) {
+                $this->handleException($e);
+            }
         }
 
         $server->serve(
@@ -48,7 +55,7 @@ final class Dispatcher implements DispatcherInterface
                 }
 
                 $this->finalizer->finalize(false);
-            }
+            },
         );
     }
 

@@ -28,11 +28,11 @@ final class ListCommand extends Command
             'File:',
         ]);
 
-        foreach ($services as $interface => $instance) {
+        foreach ($services as $interface => $reflection) {
             $table->addRow([
                 $interface::NAME,
-                $instance::class,
-                (new \ReflectionObject($instance))->getFileName(),
+                $reflection->getName(),
+                $reflection->getFileName(),
             ]);
         }
 
