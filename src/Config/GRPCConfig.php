@@ -7,6 +7,7 @@ namespace Spiral\RoadRunnerBridge\Config;
 use Spiral\Core\Container\Autowire;
 use Spiral\Core\CoreInterceptorInterface;
 use Spiral\Core\InjectableConfig;
+use Spiral\Interceptors\InterceptorInterface;
 use Spiral\RoadRunner\GRPC\ServiceInterface;
 use Spiral\RoadRunnerBridge\GRPC\Generator\GeneratorInterface;
 
@@ -64,7 +65,7 @@ final class GRPCConfig extends InjectableConfig
     }
 
     /**
-     * @return array<Autowire|class-string<CoreInterceptorInterface>>
+     * @return array<Autowire|class-string<InterceptorInterface>|class-string<CoreInterceptorInterface>>
      */
     public function getInterceptors(): array
     {

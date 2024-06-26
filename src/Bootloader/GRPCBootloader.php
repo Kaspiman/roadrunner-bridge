@@ -10,11 +10,13 @@ use Spiral\Boot\KernelInterface;
 use Spiral\Config\ConfiguratorInterface;
 use Spiral\Config\Patch\Append;
 use Spiral\Core\Attribute\Proxy;
+use Spiral\Core\CompatiblePipelineBuilder;
 use Spiral\Core\Container\Autowire;
 use Spiral\Core\CoreInterceptorInterface;
 use Spiral\Core\FactoryInterface;
-use Spiral\Core\InterceptableCore;
-use Spiral\RoadRunner\GRPC\Invoker as BaseInvoker;
+use Spiral\Interceptors\Handler\ReflectionHandler;
+use Spiral\Interceptors\InterceptorInterface;
+use Spiral\Interceptors\PipelineBuilderInterface;
 use Spiral\RoadRunner\GRPC\InvokerInterface;
 use Spiral\RoadRunner\GRPC\Server;
 use Spiral\RoadRunnerBridge\Config\GRPCConfig;
@@ -26,7 +28,6 @@ use Spiral\RoadRunnerBridge\GRPC\Generator\GeneratorRegistry;
 use Spiral\RoadRunnerBridge\GRPC\Generator\GeneratorRegistryInterface;
 use Spiral\RoadRunnerBridge\GRPC\Generator\ServiceClientGenerator;
 use Spiral\RoadRunnerBridge\GRPC\Interceptor\Invoker;
-use Spiral\RoadRunnerBridge\GRPC\Interceptor\InvokerCore;
 use Spiral\RoadRunnerBridge\GRPC\LocatorInterface;
 use Spiral\RoadRunnerBridge\GRPC\ProtoRepository\FileRepository;
 use Spiral\RoadRunnerBridge\GRPC\ProtoRepository\ProtoFilesRepositoryInterface;
@@ -117,21 +118,28 @@ final class GRPCBootloader extends Bootloader
         GRPCConfig $config,
         #[Proxy] ContainerInterface $container,
         FactoryInterface $factory,
-        BaseInvoker $invoker,
+        ?PipelineBuilderInterface $pipelineBuilder = null,
     ): InvokerInterface {
-        $core = new InterceptableCore(
-            new InvokerCore($invoker),
-        );
+        /** @var PipelineBuilderInterface $pipelineBuilder */
+        $pipelineBuilder ??= $container->get(CompatiblePipelineBuilder::class);
 
+        $handler = new ReflectionHandler($container, false);
+
+        /**
+         * @var list<InterceptorInterface|CoreInterceptorInterface> $list
+         * @var ContainerInterface $c
+         * @var FactoryInterface $f
+         */
+        $list = [];
+        $c = $container->get(ContainerInterface::class);
+        $f = $c->get(FactoryInterface::class);
         foreach ($config->getInterceptors() as $interceptor) {
-            $interceptor = $this->resolve($interceptor, $container, $factory);
-
-            \assert($interceptor instanceof CoreInterceptorInterface);
-
-            $core->addInterceptor($interceptor);
+            $list[] = $this->resolve($interceptor, $c, $factory);
         }
 
-        return new Invoker($core, $container);
+        return $f->make(Invoker::class, [
+            'handler' => $pipelineBuilder->withInterceptors(...$list)->build($handler),
+        ]);
     }
 
     private function initProtoFilesRepository(GRPCConfig $config): ProtoFilesRepositoryInterface
