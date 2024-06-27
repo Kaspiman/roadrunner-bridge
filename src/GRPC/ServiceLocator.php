@@ -56,9 +56,10 @@ final class ServiceLocator implements LocatorInterface, TokenizationListenerInte
         foreach ($interfaces as $className => $reflection) {
             \array_key_exists($className, $this->registry) and throw new \LogicException(
                 \sprintf(
-                    'Service %s already registered for interface %s.',
-                    $this->registry[$className],
+                    'Can not register service %s for interface %s because it is already registered for %s.',
+                    $class->getName(),
                     $className,
+                    $this->registry[$className]->getName(),
                 )
             );
 
