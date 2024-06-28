@@ -8,11 +8,13 @@ use Spiral\RoadRunner\GRPC\ServiceInterface;
 use Spiral\Tokenizer\Attribute\TargetClass;
 use Spiral\Tokenizer\TokenizationListenerInterface;
 
-#[TargetClass(ServiceInterface::class)]
+#[TargetClass(ServiceInterface::class, scope: 'grpc-services')]
 final class ServiceLocator implements LocatorInterface, TokenizationListenerInterface
 {
     /**
-     * @var array<class-string<ServiceInterface>, \ReflectionClass<ServiceInterface>> Interface => Implementation
+     * Service Interface => Service Implementation
+     *
+     * @var array<class-string<ServiceInterface>, \ReflectionClass<ServiceInterface>>
      */
     private array $registry = [];
 

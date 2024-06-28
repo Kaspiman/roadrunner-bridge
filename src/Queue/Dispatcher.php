@@ -12,6 +12,7 @@ use Spiral\Boot\DispatcherInterface;
 use Spiral\Boot\FinalizerInterface;
 use Spiral\Core\Scope;
 use Spiral\Core\ScopeInterface;
+use Spiral\Exceptions\ExceptionReporterInterface;
 use Spiral\Queue\Exception\RetryException;
 use Spiral\Queue\ExtendedOptionsInterface;
 use Spiral\Queue\Interceptor\Consume\Handler;
@@ -32,6 +33,7 @@ final class Dispatcher implements DispatcherInterface
         private readonly ContainerInterface $container,
         private readonly FinalizerInterface $finalizer,
         private readonly ScopeInterface $scope,
+        private readonly ExceptionReporterInterface $reporter,
     ) {
     }
 
@@ -81,9 +83,11 @@ final class Dispatcher implements DispatcherInterface
                     },
                 );
             } catch (RetryException $e) {
+                $this->reporter->report($e);
                 $this->retry($e, $task);
                 unset($e);
             } catch (\Throwable $e) {
+                $this->reporter->report($e);
                 $task->fail($e);
                 unset($e);
             }
