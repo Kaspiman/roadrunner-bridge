@@ -14,6 +14,8 @@ use Spiral\Core\CompatiblePipelineBuilder;
 use Spiral\Core\Container\Autowire;
 use Spiral\Core\CoreInterceptorInterface;
 use Spiral\Core\FactoryInterface;
+use Spiral\Grpc\Client\Bridge\GrpcClientBootloader;
+use Spiral\Grpc\Client\Config\GrpcClientConfig;
 use Spiral\Interceptors\Handler\ReflectionHandler;
 use Spiral\Interceptors\InterceptorInterface;
 use Spiral\Interceptors\PipelineBuilderInterface;
@@ -44,6 +46,7 @@ final class GRPCBootloader extends Bootloader
     {
         return [
             RoadRunnerBootloader::class,
+            GrpcClientBootloader::class,
         ];
     }
 
@@ -55,12 +58,13 @@ final class GRPCBootloader extends Bootloader
             LocatorInterface::class => ServiceLocator::class,
             ProtoFilesRepositoryInterface::class => [self::class, 'initProtoFilesRepository'],
             GeneratorRegistryInterface::class => [self::class, 'initGeneratorRegistry'],
+            GrpcClientConfig::class => [GRPCConfig::class, 'getClientConfig'],
         ];
     }
 
     public function init(
         TokenizerListenerRegistryInterface $listenerRegistry,
-        ServiceLocator $listener,
+        LocatorInterface $listener,
     ): void {
         $this->initGrpcConfig();
         $listenerRegistry->addListener($listener);
@@ -90,6 +94,9 @@ final class GRPCBootloader extends Bootloader
                     ServiceClientGenerator::class,
                     ConfigGenerator::class,
                     BootloaderGenerator::class,
+                ],
+                'client' => [
+                    'interceptors' => [],
                 ],
             ],
         );

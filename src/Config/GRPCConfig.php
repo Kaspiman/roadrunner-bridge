@@ -7,6 +7,7 @@ namespace Spiral\RoadRunnerBridge\Config;
 use Spiral\Core\Container\Autowire;
 use Spiral\Core\CoreInterceptorInterface;
 use Spiral\Core\InjectableConfig;
+use Spiral\Grpc\Client\Config\GrpcClientConfig;
 use Spiral\Interceptors\InterceptorInterface;
 use Spiral\RoadRunner\GRPC\ServiceInterface;
 use Spiral\RoadRunnerBridge\GRPC\Generator\GeneratorInterface;
@@ -23,7 +24,21 @@ final class GRPCConfig extends InjectableConfig
         'services' => [],
         'interceptors' => [],
         'generators' => [],
+        'client' => [],
     ];
+
+    public function getClientConfig(): GrpcClientConfig
+    {
+        // Map Client options
+        return match (true) {
+            !isset($this->config['client']) => new GrpcClientConfig(),
+            is_array($this->config['client']) => new GrpcClientConfig(
+                interceptors: $this->config['client']['interceptors'] ?? [],
+                services: $this->config['client']['services'] ?? [],
+            ),
+            default => $this->config['client'],
+        };
+    }
 
     public function getBinaryPath(): ?string
     {

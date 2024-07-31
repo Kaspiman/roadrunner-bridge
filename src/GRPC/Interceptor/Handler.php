@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Spiral\RoadRunnerBridge\GRPC\Interceptor;
 
 use Google\Protobuf\Internal\Message;
-use Spiral\Interceptors\Context\CallContext;
+use Spiral\Interceptors\Context\CallContextInterface;
 use Spiral\Interceptors\HandlerInterface;
 use Spiral\RoadRunner\GRPC\ContextInterface;
 use Spiral\RoadRunner\GRPC\InvokerInterface;
@@ -21,7 +21,7 @@ final class Handler implements HandlerInterface
         private readonly InvokerInterface $invoker,
     ) {}
 
-    public function handle(CallContext $context): string
+    public function handle(CallContextInterface $context): string
     {
         $args = $context->getArguments();
         \assert($args['service'] instanceof ServiceInterface);

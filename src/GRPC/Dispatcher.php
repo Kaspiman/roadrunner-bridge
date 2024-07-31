@@ -12,6 +12,7 @@ use Spiral\Core\Attribute\Proxy;
 use Spiral\RoadRunner\GRPC\Server;
 use Spiral\RoadRunner\WorkerInterface;
 use Spiral\Exceptions\ExceptionReporterInterface;
+use Spiral\RoadRunnerBridge\Exception\ServiceRegistrationException;
 use Spiral\RoadRunnerBridge\RoadRunnerMode;
 
 #[DispatcherScope(scope: 'grpc')]
@@ -43,7 +44,10 @@ final class Dispatcher implements DispatcherInterface
             try {
                 $server->registerService($interface, $container->get($service->getName()));
             } catch (\Throwable $e) {
-                $this->handleException($e);
+                $this->handleException(new ServiceRegistrationException(
+                    "Cannot register service `{$service->getName()}`: {$e->getMessage()}",
+                    previous: $e,
+                ));
             }
         }
 
