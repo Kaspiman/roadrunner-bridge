@@ -42,12 +42,6 @@ final class Invoker implements InvokerInterface
                 new CallContext(Target::fromPair($service, $method->name), [
                     $ctx,
                     $message,
-                ], [
-                    'service' => $service,
-                    'method' => $method,
-                    'ctx' => $ctx,
-                    'input' => $input,
-                    'message' => $message,
                 ]),
             ))
         );
