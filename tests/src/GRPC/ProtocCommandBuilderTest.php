@@ -40,7 +40,7 @@ final class ProtocCommandBuilderTest extends TestCase
 
         $this->assertSame(
             "protoc --plugin=path3 --php_out='path2' --php-grpc_out='path2' -I='path1' -I='path4' 'message.proto' 'service.proto' 2>&1",
-            $builder->build('path1', 'path2')
+            \str_replace('"', "'", $builder->build('path1', 'path2')),
         );
     }
 

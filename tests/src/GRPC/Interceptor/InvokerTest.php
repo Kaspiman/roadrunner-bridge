@@ -6,8 +6,10 @@ namespace Spiral\Tests\GRPC\Interceptor;
 
 use Mockery as m;
 use Service\PingService;
-use Spiral\Core\CoreInterface;
-use Service\Message;
+use Spiral\App\GRPC\Ping\PingRequest;
+use Spiral\App\GRPC\Ping\PingResponse;
+use Spiral\Interceptors\Context\CallContextInterface;
+use Spiral\Interceptors\HandlerInterface;
 use Spiral\RoadRunner\GRPC\ContextInterface;
 use Spiral\RoadRunner\GRPC\Exception\InvokeException;
 use Spiral\RoadRunner\GRPC\Method;
@@ -19,30 +21,31 @@ final class InvokerTest extends TestCase
 {
     public function testInvoke(): void
     {
-        $invoker = new Invoker($core = m::mock(CoreInterface::class), $this->getContainer());
+        $invoker = new Invoker($core = m::mock(HandlerInterface::class), $this->getContainer());
 
-        $service = m::mock(ServiceInterface::class);
-        $method = Method::parse(new \ReflectionMethod(PingService::class, 'Ping'));
+        $service = m::mock(\Spiral\App\GRPC\Ping\PingServiceInterface::class);
+        $method = Method::parse(new \ReflectionMethod(\Spiral\App\GRPC\Ping\PingService::class, 'Ping'));
 
-        $input = (new Message(['msg' => 'hello']))->serializeToString();
-        $output = (new Message(['msg' => 'world']))->serializeToString();
+        $input = new PingRequest();
+        $output = new PingResponse();
 
         $ctx = m::mock(ContextInterface::class);
         $core
-            ->shouldReceive('callAction')
+            ->shouldReceive('handle')
             ->once()
-            ->withArgs(function (string $class, string $method, array $params) use ($service, $input) {
-                $this->assertSame($class, $service::class);
-                $this->assertSame('Ping', $method);
-                $this->assertInstanceOf(ContextInterface::class, $params['ctx']);
-                $this->assertSame($input, $params['input']);
-                $this->assertInstanceOf(Message::class, $params['message']);
-                $this->assertSame('hello', $params['message']->getMsg());
+            ->withArgs(function (CallContextInterface $context) use ($service, $input) {
+                $this->assertSame($context->getTarget()->getPath()[0], $service::class);
+                $this->assertSame('Ping', $context->getTarget()->getPath()[1]);
+                $this->assertInstanceOf(ContextInterface::class, $context->getArguments()[0]);
+                $this->assertInstanceOf(PingRequest::class, $context->getArguments()[1]);
 
                 return true;
             })->andReturn($output);
 
-        $this->assertSame($output, $invoker->invoke($service, $method, $ctx, $input));
+        $this->assertSame(
+            $output->serializeToString(),
+            $invoker->invoke($service, $method, $ctx, $input->serializeToString()),
+        );
     }
 
     public function testInvokeWithBrokenText(): void

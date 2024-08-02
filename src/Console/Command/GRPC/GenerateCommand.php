@@ -62,7 +62,7 @@ final class GenerateCommand extends Command
                 $this->sprintf('<error>Proto file `%s` not found.</error>', $protoFile);
                 continue;
             }
-            $protoFile = \realpath($protoFile);
+            $protoFile = \realpath($protoFile) ?: $protoFile;
 
             $this->sprintf("<info>Compiling <fg=cyan>`%s`</fg=cyan>:</info>\n", $protoFile);
 

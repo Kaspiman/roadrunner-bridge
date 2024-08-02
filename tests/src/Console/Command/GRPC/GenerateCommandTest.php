@@ -19,8 +19,9 @@ final class GenerateCommandTest extends ConsoleTestCase
             'GRPC/Ping/PingResponse.php',
         ];
 
+        $path = $this->getDirectoryByAlias('app') . 'proto/service.proto';
         $this->assertStringContainsString(
-            \sprintf('Compiling `%s`:', \realpath($this->getDirectoryByAlias('app') . 'proto/service.proto')),
+            \sprintf('Compiling `%s`:', \realpath($path) ?: $path),
             $result
         );
 

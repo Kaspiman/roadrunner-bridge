@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Spiral\Tests\GRPC;
 
-use Spiral\App\GRPC\EchoService\Message;
+use Spiral\App\GRPC\Ping\PingResponse;
 use Spiral\Boot\FinalizerInterface;
 use Spiral\RoadRunner\Payload;
 use Spiral\RoadRunner\Worker;
@@ -42,13 +42,13 @@ final class DispatcherTest extends ConsoleTestCase
 
         $worker->shouldReceive('waitPayload')->once()->andReturn(
             new Payload(
-                (new Message())->setMsg('PING')->serializeToString(),
+                (new PingResponse())->serializeToString(),
                 json_encode(['service' => 'service.Echo', 'method' => 'Ping', 'context' => []])
             )
         );
 
         $worker->shouldReceive('respond')->once()->withArgs(function (Payload $payload) {
-            $this->assertSame($payload->body, (new Message())->setMsg('PONG')->serializeToString());
+            $this->assertSame($payload->body, (new PingResponse())->serializeToString());
             return true;
         });
 
