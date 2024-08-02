@@ -9,12 +9,9 @@ use Spiral\Config\LoaderInterface;
 use Spiral\Core\ConfigsInterface;
 use Spiral\Core\Container\Autowire;
 use Spiral\Core\CoreInterceptorInterface;
-use Spiral\RoadRunnerBridge\GRPC\Generator\BootloaderGenerator;
-use Spiral\RoadRunnerBridge\GRPC\Generator\ConfigGenerator;
 use Spiral\RoadRunnerBridge\GRPC\Generator\GeneratorInterface;
 use Spiral\RoadRunnerBridge\GRPC\Generator\GeneratorRegistry;
 use Spiral\RoadRunnerBridge\GRPC\Generator\GeneratorRegistryInterface;
-use Spiral\RoadRunnerBridge\GRPC\Generator\ServiceClientGenerator;
 use Spiral\RoadRunnerBridge\GRPC\Interceptor\Invoker;
 use Spiral\RoadRunner\GRPC\InvokerInterface;
 use Spiral\RoadRunner\GRPC\Server;
@@ -95,11 +92,7 @@ final class GRPCBootloaderTest extends TestCase
                 $this->getDirectoryByAlias('app') . 'proto/foo.proto',
             ],
             'interceptors' => [],
-            'generators' => [
-                ServiceClientGenerator::class,
-                ConfigGenerator::class,
-                BootloaderGenerator::class,
-            ],
+            'generators' => [],
         ], $config);
     }
 

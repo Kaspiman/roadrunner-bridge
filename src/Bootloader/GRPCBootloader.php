@@ -23,12 +23,9 @@ use Spiral\RoadRunner\GRPC\InvokerInterface;
 use Spiral\RoadRunner\GRPC\Server;
 use Spiral\RoadRunnerBridge\Config\GRPCConfig;
 use Spiral\RoadRunnerBridge\GRPC\Dispatcher;
-use Spiral\RoadRunnerBridge\GRPC\Generator\BootloaderGenerator;
-use Spiral\RoadRunnerBridge\GRPC\Generator\ConfigGenerator;
 use Spiral\RoadRunnerBridge\GRPC\Generator\GeneratorInterface;
 use Spiral\RoadRunnerBridge\GRPC\Generator\GeneratorRegistry;
 use Spiral\RoadRunnerBridge\GRPC\Generator\GeneratorRegistryInterface;
-use Spiral\RoadRunnerBridge\GRPC\Generator\ServiceClientGenerator;
 use Spiral\RoadRunnerBridge\GRPC\Interceptor\Invoker;
 use Spiral\RoadRunnerBridge\GRPC\LocatorInterface;
 use Spiral\RoadRunnerBridge\GRPC\ProtoRepository\FileRepository;
@@ -90,11 +87,7 @@ final class GRPCBootloader extends Bootloader
                 'servicesBasePath' => null,
                 'services' => [],
                 'interceptors' => [],
-                'generators' => [
-                    ServiceClientGenerator::class,
-                    ConfigGenerator::class,
-                    BootloaderGenerator::class,
-                ],
+                'generators' => [],
                 'client' => [
                     'interceptors' => [],
                 ],
@@ -121,6 +114,9 @@ final class GRPCBootloader extends Bootloader
         $this->config->modify(GRPCConfig::CONFIG, new Append('generators', null, $generator));
     }
 
+    /**
+     * @psalm-suppress DeprecatedInterface
+     */
     private function initInvoker(
         GRPCConfig $config,
         #[Proxy] ContainerInterface $container,
