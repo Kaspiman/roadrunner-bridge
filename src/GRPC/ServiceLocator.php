@@ -8,6 +8,9 @@ use Spiral\RoadRunner\GRPC\ServiceInterface;
 use Spiral\Tokenizer\Attribute\TargetClass;
 use Spiral\Tokenizer\TokenizationListenerInterface;
 
+/**
+ * @internal
+ */
 #[TargetClass(ServiceInterface::class, scope: 'grpc-services')]
 final class ServiceLocator implements LocatorInterface, TokenizationListenerInterface
 {

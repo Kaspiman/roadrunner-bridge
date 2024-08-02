@@ -8,6 +8,9 @@ use Google\Protobuf\Internal\Message;
 use Spiral\RoadRunner\GRPC\ContextInterface;
 use Spiral\RoadRunner\GRPC\Method;
 
+/**
+ * @internal
+ */
 final class UnaryCall implements UnaryCallInterface
 {
     public function __construct(

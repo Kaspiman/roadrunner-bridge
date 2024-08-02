@@ -15,6 +15,9 @@ use Spiral\Exceptions\ExceptionReporterInterface;
 use Spiral\RoadRunnerBridge\Exception\ServiceRegistrationException;
 use Spiral\RoadRunnerBridge\RoadRunnerMode;
 
+/**
+ * @internal
+ */
 #[DispatcherScope(scope: 'grpc')]
 final class Dispatcher implements DispatcherInterface
 {
