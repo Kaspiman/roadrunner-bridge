@@ -8,7 +8,7 @@ use Spiral\Files\Files;
 
 abstract class ConsoleTestCase extends TestCase
 {
-    public function generateGRPCService(): string
+    protected function generateGRPCService(): string
     {
         $appPath = $this->getDirectoryByAlias('app');
 
@@ -18,9 +18,11 @@ abstract class ConsoleTestCase extends TestCase
         ]);
 
         $files = [
-            'GRPC/EchoService/EchoInterface.php',
-            'GRPC/EchoService/Message.php',
-            'GRPC/EchoService/GPBMetadata/PBEcho.php',
+            'GRPC/Ping/PingServiceInterface.php',
+            'GRPC/Ping/PingService.php',
+            'GRPC/Ping/PingResponse.php',
+            'GRPC/Ping/PingRequest.php',
+            'GRPC/Ping/GPBMetadata/Service.php',
         ];
 
         foreach ($files as $file) {

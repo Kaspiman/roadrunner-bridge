@@ -13,13 +13,14 @@ final class GenerateCommandTest extends ConsoleTestCase
         $result = $this->generateGRPCService();
 
         $files = [
-            'GRPC/EchoService/EchoInterface.php',
-            'GRPC/EchoService/Message.php',
-            'GRPC/EchoService/GPBMetadata/PBEcho.php',
+            'GRPC/Ping/PingServiceInterface.php',
+            'GRPC/Ping/GPBMetadata/Service.php',
+            'GRPC/Ping/PingRequest.php',
+            'GRPC/Ping/PingResponse.php',
         ];
 
         $this->assertStringContainsString(
-            sprintf('Compiling `%s`:', $this->getDirectoryByAlias('app') . 'proto/echo.proto'),
+            \sprintf('Compiling `%s`:', \realpath($this->getDirectoryByAlias('app') . 'proto/service.proto')),
             $result
         );
 
@@ -31,8 +32,8 @@ final class GenerateCommandTest extends ConsoleTestCase
             );
         }
 
-        $this->assertStringContainsString(
-            sprintf('Proto file `%s` not found.', $this->getDirectoryByAlias('app') . 'proto/foo.proto'),
+        $this->assertMatchesRegularExpression(
+            '#Proto file `.+proto[\\\\/]foo\\.proto` not found.#',
             $result
         );
     }

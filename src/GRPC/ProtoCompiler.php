@@ -31,7 +31,8 @@ final class ProtoCompiler
      */
     public function compile(string $protoFile): array
     {
-        $tmpDir = $this->tmpDir();
+        $protoFile = \realpath($protoFile);
+        $tmpDir = \realpath($this->tmpDir());
 
         $output = $this->executor->execute(
             $this->commandBuilder->build(\dirname($protoFile), $tmpDir)

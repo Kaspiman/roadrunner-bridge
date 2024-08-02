@@ -36,10 +36,11 @@ final class ProtocCommandBuilder
      */
     private function getProtoFiles(string $protoDir): array
     {
-        return \array_filter(
+        $filtered = \array_filter(
             $this->files->getFiles($protoDir),
             static fn (string $file) => \str_ends_with($file, '.proto')
         );
+        return \array_map(\realpath(...), $filtered);
     }
 
     private function buildDirs(string $protoDir): string
@@ -54,6 +55,9 @@ final class ProtocCommandBuilder
             return '';
         }
 
-        return ' -I=' . \implode(' -I=', \array_map('escapeshellarg', $dirs));
+        return ' -I=' . \implode(' -I=', \array_map(
+            static fn(string$dir): string => \escapeshellarg(\realpath($dir)),
+            $dirs,
+        ));
     }
 }

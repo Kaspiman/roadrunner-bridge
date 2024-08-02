@@ -29,17 +29,17 @@ final class ListCommandTest extends ConsoleTestCase
         $result = $this->runCommand('grpc:services');
 
         $this->assertStringContainsString(
-            'service.Echo',
+            'service.Ping',
             $result
         );
 
         $this->assertStringContainsString(
-            'Spiral\App\GRPC\EchoService',
+            'Spiral\App\GRPC\Ping\PingService',
             $result
         );
 
         $this->assertStringContainsString(
-            'app/GRPC/EchoService.php',
+            'PingService.php',
             $result
         );
     }

@@ -1,0 +1,22 @@
+// app/proto/echo.proto
+
+syntax = "proto3";
+package ping.dto;
+
+option php_namespace = "Spiral\\App\\GRPC\\Ping";
+option php_metadata_namespace = "Spiral\\App\\GRPC\\Ping\\GPBMetadata";
+
+service PingService {
+    rpc Ping (ping.dto.PingRequest) returns (ping.dto.PingResponse) {
+    }
+}
+
+message PingRequest {
+    string from = 1;
+    string to = 2;
+    string subject = 3;
+    string body = 4;
+}
+
+message PingResponse {
+}
