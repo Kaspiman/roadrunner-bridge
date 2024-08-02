@@ -34,7 +34,13 @@ final class GenerateCommand extends Command
     ): int {
         $binaryPath = $config->getBinaryPath();
 
-        if ($binaryPath !== null && !\file_exists($binaryPath)) {
+        if ($binaryPath === null && \file_exists($this->getDefaultBinary())) {
+            $binaryPath = $this->getDefaultBinary();
+        }
+
+        $binaryPath ?? throw new \RuntimeException('Protoc plugin binary was not set in the configuration.');
+
+        if (!\file_exists($binaryPath)) {
             $this->error("Protoc plugin binary `$binaryPath` was not found. Use command `./vendor/bin/rr download-protoc-binary` to download it.");
 
             return self::FAILURE;
@@ -140,5 +146,10 @@ final class GenerateCommand extends Command
         }
 
         return (new \ReflectionObject($kernel))->getNamespaceName();
+    }
+
+    private function getDefaultBinary(): string
+    {
+        return 'protoc-gen-php-grpc' . (PHP_OS_FAMILY === 'Windows' ? '.exe' : '');
     }
 }

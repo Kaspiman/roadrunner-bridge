@@ -93,6 +93,9 @@ final class GRPCBootloaderTest extends TestCase
             ],
             'interceptors' => [],
             'generators' => [],
+            'client' => [
+                'interceptors' => [],
+            ],
         ], $config);
     }
 
