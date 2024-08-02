@@ -56,6 +56,7 @@
     },
     "require-dev": {
         "buggregator/trap": "^1.10",
+        "internal/dload": "^1.0.0",
         "phpunit/phpunit": "^10.5",
         "spiral/framework": "^3.14",
         "spiral/nyholm-bridge": "^1.3",
@@ -80,8 +81,12 @@
         }
     },
     "scripts": {
-        "test": "vendor/bin/phpunit",
-        "psalm": "vendor/bin/psalm --no-cache --config=psalm.xml ./src"
+        "post-update-cmd": [
+            "dload get --no-interaction"
+        ],
+        "test": "phpunit",
+        "psalm": "psalm",
+        "psalm:baseline": "psalm --set-baseline=psalm-baseline.xml"
     },
     "config": {
         "sort-packages": true,
