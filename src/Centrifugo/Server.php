@@ -53,7 +53,7 @@ final class Server
                 $services = $this->services;
 
                 $scope->runScope(
-                    new Scope('centrifugo.request', [RequestInterface::class => $request]),
+                    new Scope('centrifugo-request', [RequestInterface::class => $request]),
                     static fn(): mixed => $pipeline->handle(
                         new CallContext(
                             /** @see ServiceInterface::handle() */

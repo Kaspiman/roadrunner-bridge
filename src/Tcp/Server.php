@@ -67,7 +67,7 @@ final class Server
                  * @var ResponseInterface $response
                  */
                 $response = $scope->runScope(
-                    new Scope('tcp.request', [RequestInterface::class => $request]),
+                    new Scope('tcp-request', [RequestInterface::class => $request]),
                     static fn (): mixed => $pipeline->handle(new CallContext(
                         /** @see \Spiral\RoadRunnerBridge\Tcp\Service\ServiceInterface::handle() */
                         Target::fromPair($services->getService($server), 'handle'),

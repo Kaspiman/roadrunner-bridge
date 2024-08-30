@@ -12,7 +12,7 @@ use Spiral\RoadRunnerBridge\Tcp\Response\RespondMessage;
 use Spiral\RoadRunnerBridge\Tcp\Response\ResponseInterface;
 use Spiral\RoadRunnerBridge\Tcp\Service\ServiceInterface;
 
-#[Scope('tcp.request')]
+#[Scope('tcp-request')]
 final class ScopedTestService implements ServiceInterface
 {
     public static array $scopes = [];

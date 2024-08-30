@@ -37,7 +37,7 @@ final class Invoker implements InvokerInterface
 
         /** @psalm-suppress InvalidArgument */
         return $this->scope->runScope(
-            new Scope('grpc.request', [UnaryCallInterface::class => new UnaryCall($ctx, $method, $message)]),
+            new Scope('grpc-request', [UnaryCallInterface::class => new UnaryCall($ctx, $method, $message)]),
             static fn(): string => self::resultToString($handler->handle(
                 new CallContext(Target::fromPair($service, $method->name), [
                     $ctx,

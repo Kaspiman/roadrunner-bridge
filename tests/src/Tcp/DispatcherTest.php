@@ -148,7 +148,7 @@ final class DispatcherTest extends TestCase
 
         $worker = $this->mockContainer(WorkerInterface::class);
         $this->getContainer()
-            ->getBinder('tcp.request')
+            ->getBinder('tcp-request')
             ->bindSingleton(ScopedTestService::class, ScopedTestService::class);
 
         $this->getContainer()->bind(RoadRunnerMode::class, RoadRunnerMode::Tcp);
@@ -178,6 +178,6 @@ final class DispatcherTest extends TestCase
 
         $this->getApp()->serve();
 
-        $this->assertEquals(['tcp.request', 'tcp', 'root'], ScopedTestService::$scopes);
+        $this->assertEquals(['tcp-request', 'tcp', 'root'], ScopedTestService::$scopes);
     }
 }
