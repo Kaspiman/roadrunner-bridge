@@ -16,7 +16,7 @@ use Spiral\Core\CoreInterceptorInterface;
 use Spiral\Core\FactoryInterface;
 use Spiral\Grpc\Client\Bridge\GrpcClientBootloader;
 use Spiral\Grpc\Client\Config\GrpcClientConfig;
-use Spiral\Interceptors\Handler\ReflectionHandler;
+use Spiral\Interceptors\Handler\AutowireHandler;
 use Spiral\Interceptors\InterceptorInterface;
 use Spiral\Interceptors\PipelineBuilderInterface;
 use Spiral\RoadRunner\GRPC\InvokerInterface;
@@ -126,7 +126,7 @@ final class GRPCBootloader extends Bootloader
         /** @var PipelineBuilderInterface $pipelineBuilder */
         $pipelineBuilder ??= $container->get(CompatiblePipelineBuilder::class);
 
-        $handler = new ReflectionHandler($container, false);
+        $handler = new AutowireHandler($container, false);
 
         /**
          * @var list<InterceptorInterface|CoreInterceptorInterface> $list

@@ -13,7 +13,7 @@ use Spiral\Core\ScopeInterface;
 use Spiral\Exceptions\ExceptionReporterInterface;
 use Spiral\Interceptors\Context\CallContext;
 use Spiral\Interceptors\Context\Target;
-use Spiral\Interceptors\Handler\ReflectionHandler;
+use Spiral\Interceptors\Handler\AutowireHandler;
 use Spiral\Interceptors\HandlerInterface;
 use Spiral\Interceptors\PipelineBuilderInterface;
 use Spiral\RoadRunner\Payload;
@@ -44,7 +44,7 @@ final class Server
         ?PipelineBuilderInterface $pipelineBuilder = null,
     ) {
         $this->pipelineBuilder = $pipelineBuilder ?? $container->get(CompatiblePipelineBuilder::class);
-        $this->handler = new ReflectionHandler($container);
+        $this->handler = new AutowireHandler($container);
     }
 
     /**
